@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat.startActivityForResult
-import com.example.scanner.list.Greeting
 import com.example.scanner.ui.theme.ScannerTheme
 
 @Composable
