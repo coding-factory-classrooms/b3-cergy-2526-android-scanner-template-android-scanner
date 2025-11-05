@@ -1,8 +1,7 @@
 package com.example.scanner.scan
 
 import android.util.Log
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview as CameraPreview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
@@ -16,7 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.scanner.ui.theme.ScannerTheme
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
+import androidx.camera.core.Preview as CameraPreview
+
 
 @Composable
 fun ScanScreen() {
@@ -24,14 +28,14 @@ fun ScanScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
+    var scannedCode by remember { mutableStateOf<String?>(null) }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Center
+                .padding(innerPadding)
         ) {
-            // 🔹 Affichage du flux caméra
             AndroidView(
                 factory = { ctx ->
                     val previewView = PreviewView(ctx)
@@ -39,15 +43,31 @@ fun ScanScreen() {
 
                     cameraProviderFuture.addListener({
                         val cameraProvider = cameraProviderFuture.get()
+
+                        // Prévisualisation
                         val preview = CameraPreview.Builder().build().also {
                             it.setSurfaceProvider(previewView.surfaceProvider)
                         }
 
-                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                        // Analyse des images
+                        val analyzer = ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                            .also {
+                                it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { code ->
+                                    scannedCode = code
+                                    Log.d("ScanScreen", "Code détecté : $code")
+                                })
+                            }
 
                         try {
                             cameraProvider.unbindAll()
-                            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                analyzer
+                            )
                         } catch (exc: Exception) {
                             Log.e("CameraX", "Use case binding failed", exc)
                         }
@@ -62,17 +82,39 @@ fun ScanScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ScanButton(onButtonClick = {
-                Log.d("ScanScreen", "Scan button clicked")
-            })
+            Text(
+                text = scannedCode ?: "Aucun code détecté",
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }
 
-@Composable
-private fun ScanButton(onButtonClick: () -> Unit) {
-    Button(onClick = onButtonClick, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text("Scan")
+// 🔍 Analyseur d’images pour ML Kit
+private class BarcodeAnalyzer(
+    private val onBarcodeDetected: (String) -> Unit
+) : ImageAnalysis.Analyzer {
+
+    private val scanner = BarcodeScanning.getClient()
+
+    @ExperimentalGetImage
+    override fun analyze(imageProxy: ImageProxy) {
+        val mediaImage = imageProxy.image ?: return
+
+        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+        scanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                for (barcode in barcodes) {
+                    barcode.rawValue?.let { onBarcodeDetected(it) }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("BarcodeAnalyzer", "Erreur de scan", e)
+            }
+            .addOnCompleteListener {
+                imageProxy.close()
+            }
     }
 }
 

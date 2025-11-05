@@ -21,17 +21,10 @@ class ScanActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+        setContent { ScannerTheme { ScanScreen() } }
 
-        setContent {
-            ScannerTheme {
-                ScanScreen()
-            }
-        }
-
-        // Démarre le thread pour la caméra
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Vérifie les permissions
         if (!allPermissionsGranted()) {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
@@ -43,11 +36,9 @@ class ScanActivity : ComponentActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (!allPermissionsGranted()) {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+        if (requestCode == REQUEST_CODE_PERMISSIONS && !allPermissionsGranted()) {
+            Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -63,10 +54,7 @@ class ScanActivity : ComponentActivity() {
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS =
-            mutableListOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
-            ).apply {
+            mutableListOf(Manifest.permission.CAMERA).apply {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
