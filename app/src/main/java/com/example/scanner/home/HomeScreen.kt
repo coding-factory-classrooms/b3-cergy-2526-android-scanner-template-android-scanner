@@ -25,11 +25,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.scanner.scan.ScanActivity
 import com.example.scanner.ui.theme.ScannerTheme
 
 
 @Composable
 fun HomeScreen() {
+    val context = LocalContext.current
 
     Scaffold() { innerPadding ->
         Column(modifier = Modifier
@@ -45,7 +47,9 @@ fun HomeScreen() {
 
 
             ScanButton(onButtonClick = {
-                //
+
+                val intent = Intent(context, ScanActivity::class.java)
+                context.startActivity(intent)
             })
 
             Spacer(Modifier.height(12.dp))
