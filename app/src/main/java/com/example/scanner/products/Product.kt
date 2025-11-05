@@ -3,7 +3,6 @@ package com.example.scanner.products
 enum class Category {
 }
 
-
 data class Product (
     val product_name: String?
 //    val id: Int, // noted "code" in API response
