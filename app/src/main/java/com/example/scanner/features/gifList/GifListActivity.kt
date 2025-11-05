@@ -1,14 +1,13 @@
-package com.example.scanner
+package com.example.scanner.features.gifList
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.scanner.features.gifList.GifListView
 import com.example.scanner.ui.theme.ScannerTheme
 import io.paperdb.Paper
 
-class MainActivity : ComponentActivity() {
+class GifListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
