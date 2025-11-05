@@ -23,4 +23,9 @@ val sampleProducts = listOf(
     Product(3, "lofsdjkfjsl", R.drawable.cristalline),
     Product(4, "lfdnsjkf", R.drawable.cristalline),
     Product(5, "aaaaaaaaaaaaaaaaaaao", R.drawable.cristalline),
+    Product(6, "lo", R.drawable.cristalline),
+    Product(7, "uhihih", R.drawable.cristalline),
+    Product(8, "lofsdjkfjsl", R.drawable.cristalline),
+    Product(9, "lfdnsjkf", R.drawable.cristalline),
+    Product(10, "aaaaaaaaaaaaaaaaaaao", R.drawable.cristalline),
 )
