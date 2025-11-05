@@ -76,4 +76,6 @@ dependencies {
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+
+    implementation("io.github.pilgr:paperdb:2.7.2")
 }
