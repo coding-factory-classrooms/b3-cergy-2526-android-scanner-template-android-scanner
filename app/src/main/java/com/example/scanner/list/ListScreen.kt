@@ -1,58 +1,79 @@
 package com.example.scanner.list
 
 import android.content.Intent
-import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.scanner.camera.CameraActivity
 import com.example.scanner.ui.theme.ScannerTheme
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.example.scanner.R
 
 
 @Composable
 fun ListScreen() {
+    // Obtenir le context actuel
     val context = LocalContext.current
 
 
-    Scaffold { innerPadding ->
-        Column(
-            Modifier
+    Scaffold(
+        floatingActionButton = {
+            CameraButton(
+                 onButtonClick = {
+                    // Charger le context pour démarrer une activité pour camera activity
+                    val intent = Intent(context, CameraActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .navigationBarsPadding()
+                    .height(10.dp)
+            )
+        },
+        floatingActionButtonPosition = FabPosition.End
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+                .padding(innerPadding)
         ) {
-
-
-            CameraButton(onButtonClick = {
-                // Charger le context pour démarrer une activité pour camera activity
-                val intent = Intent(context, CameraActivity::class.java)
-                context.startActivity(intent)
-            })
+            // items
         }
-
-
     }
 }
 
 @Composable
-fun CameraButton(onButtonClick: () -> Unit) {
+fun CameraButton(onButtonClick: () -> Unit, modifier: Any) {
     Button(
-        onClick = onButtonClick
+        onClick = onButtonClick,
+        contentPadding = PaddingValues(8.dp),
+        modifier = Modifier
+            .padding(16.dp)
+            .defaultMinSize(minWidth = 1.dp, minHeight = 1.dp) // j'évite qu'il puisse être negatif
     ) {
-        Text("Caméra")
+        Icon(
+            painterResource(R.drawable.camera),
+            contentDescription = "Caméra",
+            modifier = Modifier.size(65.dp) // taille de l'icon
+        )
     }
 }
+
 
 
 
