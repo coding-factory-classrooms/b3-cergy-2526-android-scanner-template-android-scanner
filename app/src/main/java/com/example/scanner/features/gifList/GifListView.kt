@@ -1,4 +1,4 @@
-package com.example.scanner.features.resultScan
+package com.example.scanner.features.gifList
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.scanner.ui.theme.ScannerTheme
 
 @Composable
-fun ResultScanView() {
+fun GifListView() {
     Scaffold() { innerPadding ->
         Column(
             modifier = Modifier
@@ -25,15 +25,15 @@ fun ResultScanView() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = "Page résultat du scan", fontSize = 20.sp)
+            Text(text = "Page Gif liste", fontSize = 20.sp)
         }
     }
 }
 
 @Preview
 @Composable
-fun ResultScanViewPreview(){
+fun GifListViewPreview(){
     ScannerTheme() {
-        ResultScanView()
+        GifListView()
     }
 }
