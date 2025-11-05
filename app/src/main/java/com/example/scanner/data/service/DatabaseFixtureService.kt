@@ -1,0 +1,122 @@
+package com.example.scanner.data.service
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
+import com.example.scanner.data.dao.TranslationDao
+import com.example.scanner.data.model.Translation
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+interface DatabaseFixtureService {
+    suspend fun seedDatabaseIfNeeded()
+    suspend fun clearDatabase()
+    suspend fun resetAndReseed()
+}
+
+class DatabaseFixtureServiceImpl(
+    private val translationDao: TranslationDao,
+    private val context: Context
+) : DatabaseFixtureService {
+
+    private val prefs: SharedPreferences = 
+        context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    
+    private val FIXTURES_INSERTED_KEY = "fixtures_inserted"
+    private val RESET_DB_KEY = "reset_database"
+    private val TAG = "DatabaseFixtureService"
+
+    override suspend fun seedDatabaseIfNeeded() {
+        // Vérifier si on doit supprimer la DB
+        val shouldReset = prefs.getBoolean(RESET_DB_KEY, false)
+        if (shouldReset) {
+            Log.d(TAG, "Reset flag detected, clearing database...")
+            clearDatabase()
+            prefs.edit().putBoolean(RESET_DB_KEY, false).apply()
+        }
+        
+        // Réinitialiser à chaque lancement
+        Log.d(TAG, "Resetting database and reseeding fixtures at each launch...")
+        resetAndReseed()
+    }
+
+    private suspend fun insertFixtures() {
+        val fixtures = listOf(
+            Translation(
+                id = 0,
+                isFave = true,
+                createAt = System.currentTimeMillis() - 86400000, // Il y a 1 jour
+                inputLange = "fr-FR",
+                outputLange = "en-US",
+                OriginaleText = "Bonjour, comment allez-vous ?",
+                TradText = "Hello, how are you?",
+                pathAudioFile = "/storage/emulated/0/Download/audio_001.mp3"
+            ),
+            Translation(
+                id = 0,
+                isFave = false,
+                createAt = System.currentTimeMillis() - 172800000, // Il y a 2 jours
+                inputLange = "en-US",
+                outputLange = "fr-FR",
+                OriginaleText = "Good morning, have a nice day!",
+                TradText = "Bonjour, passez une bonne journée !",
+                pathAudioFile = "/storage/emulated/0/Download/audio_002.mp3"
+            ),
+            Translation(
+                id = 0,
+                isFave = true,
+                createAt = System.currentTimeMillis() - 259200000, // Il y a 3 jours
+                inputLange = "fr-FR",
+                outputLange = "es-ES",
+                OriginaleText = "Merci beaucoup pour votre aide",
+                TradText = "Muchas gracias por tu ayuda",
+                pathAudioFile = "/storage/emulated/0/Download/audio_003.mp3"
+            ),
+            Translation(
+                id = 0,
+                isFave = false,
+                createAt = System.currentTimeMillis() - 345600000, // Il y a 4 jours
+                inputLange = "de-DE",
+                outputLange = "fr-FR",
+                OriginaleText = "Guten Tag, wie geht es Ihnen?",
+                TradText = "Bonjour, comment allez-vous ?",
+                pathAudioFile = "/storage/emulated/0/Download/audio_004.mp3"
+            ),
+            Translation(
+                id = 0,
+                isFave = false,
+                createAt = System.currentTimeMillis() - 432000000, // Il y a 5 jours
+                inputLange = "it-IT",
+                outputLange = "fr-FR",
+                OriginaleText = "Ciao, come stai?",
+                TradText = "Salut, comment vas-tu ?",
+                pathAudioFile = "/storage/emulated/0/Download/audio_005.mp3"
+            )
+        )
+
+        fixtures.forEachIndexed { index, translation ->
+            val insertedId = translationDao.insert(translation)
+            Log.d(TAG, "Fixture ${index + 1}/${fixtures.size} inserted with id: $insertedId")
+        }
+        
+        Log.d(TAG, "Total fixtures inserted: ${fixtures.size}")
+    }
+    
+    override suspend fun clearDatabase() {
+        val countBefore = translationDao.getAll().first().size
+        translationDao.deleteAll()
+        prefs.edit().putBoolean(FIXTURES_INSERTED_KEY, false).apply()
+        Log.d(TAG, "Database cleared: $countBefore translations deleted")
+    }
+    
+    override suspend fun resetAndReseed() {
+        Log.d(TAG, "Resetting database and reseeding fixtures...")
+        clearDatabase()
+        insertFixtures()
+        prefs.edit().putBoolean(FIXTURES_INSERTED_KEY, true).apply()
+        Log.d(TAG, "OK - Database reset and fixtures reinserted successfully")
+    }
+}
+
