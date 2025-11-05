@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.scanner.ui.components.atoms.DebugIconButton
 import com.example.scanner.ui.components.atoms.RecordIconButton
 import com.example.scanner.ui.components.atoms.StopIconButton
 import com.example.scanner.ui.components.molecules.AmplitudeVisualizer
@@ -21,6 +22,7 @@ fun RecordingControls(
     duration: Long,
     amplitude: Int,
     onRecordClick: () -> Unit,
+    onDebugClick: ()-> Unit,
     onStopClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -41,6 +43,12 @@ fun RecordingControls(
         } else {
             RecordIconButton(
                 onClick = onRecordClick,
+                modifier = Modifier.size(100.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            DebugIconButton(
+                onClick = onDebugClick,
                 modifier = Modifier.size(100.dp)
             )
         }

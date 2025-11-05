@@ -65,7 +65,8 @@ fun AudioRecorderScreen(
                 duration = uiState.recordingDuration,
                 amplitude = uiState.amplitude,
                 onRecordClick = {},
-                onStopClick = viewModel::stopRecording
+                onStopClick = viewModel::stopRecording,
+                onDebugClick = {}
             )
             uiState.recordedBase64 != null -> uiState.recordedBase64?.let { base64 ->
                 RecordingStatus(
@@ -86,8 +87,10 @@ fun AudioRecorderScreen(
                         if (hasPermission) viewModel.startRecording()
                         else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     },
-                    onStopClick = {}
+                    onStopClick = {},
+                    onDebugClick = {viewModel.activeOnDebug()}
                 )
+
             }
         }
     }

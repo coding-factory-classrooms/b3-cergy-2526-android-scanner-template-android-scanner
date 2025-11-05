@@ -25,7 +25,8 @@ data class UiState(
     val amplitude: Int = 0,
     val recordingDuration: Long = 0L,
     val selectedLanguage: String = "fr-FR",
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    var isDebug: Boolean = false
 )
 
 class AudioRecorderViewModel(
@@ -37,8 +38,6 @@ class AudioRecorderViewModel(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
-    val uiEffect: SharedFlow<UiEffect> = _uiEffect.asSharedFlow()
-
     private var recordingFile: File? = null
     private var durationJob: Job? = null
     private var amplitudeJob: Job? = null
@@ -47,7 +46,18 @@ class AudioRecorderViewModel(
         _uiState.update { it.copy(selectedLanguage = languageCode) }
     }
 
+    fun activeOnDebug(){
+        // Fonction qui appel change la valeur de isDebug + lance stop recording pour avoir un fake donnée
+        _uiState.value.isDebug = true
+        stopRecording()
+    }
+
     fun startRecording() {
+        // vérifie if Debug == True
+        if (_uiState.value.isDebug) {
+            stopRecording()
+            return
+        }
         if (audioRepository.isRecording()) {
             _uiState.update { it.copy(errorMessage = "L'enregistrement est déjà en cours") }
             return
@@ -80,6 +90,19 @@ class AudioRecorderViewModel(
     }
 
     fun stopRecording() {
+        // vérifie if Debug == True et retourne directement un base64 de test
+        if (_uiState.value.isDebug) {
+            _uiState.update {
+                it.copy(
+                    isRecording = false,
+                    recordedBase64 = "Qm9uam91cg==",
+                    recordingDuration = 0L,
+                    amplitude = 0
+                )
+            }
+            emitEffect(UiEffect.RecordingStopped)
+            return
+        }
         if (!audioRepository.isRecording()) {
             _uiState.update { it.copy(errorMessage = "Aucun enregistrement en cours") }
             return
@@ -163,6 +186,5 @@ class AudioRecorderViewModel(
         object RecordingStarted : UiEffect()
         object RecordingStopped : UiEffect()
         object StateReset : UiEffect()
-        data class Info(val message: String) : UiEffect()
     }
 }
