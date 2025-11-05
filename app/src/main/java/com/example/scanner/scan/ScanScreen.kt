@@ -1,41 +1,52 @@
 package com.example.scanner.scan
 
+import HistoryViewModel
+import android.content.Intent
 import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.size.Scale
 import com.example.scanner.ui.theme.ScannerTheme
 import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 import androidx.camera.core.Preview as CameraPreview
-
+import com.example.scanner.history.HistoryActivity
 
 @Composable
-fun ScanScreen() {
+fun ScanScreen(
+    scanViewModel: ScanViewModel = viewModel(),
+    historyViewModel: HistoryViewModel = viewModel()
+) {
+    val products by scanViewModel.products.collectAsState()
+    var scannedCode by remember { mutableStateOf<String?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
-    var scannedCode by remember { mutableStateOf<String?>(null) }
-
     Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+
+            // Camera Preview
             AndroidView(
                 factory = { ctx ->
                     val previewView = PreviewView(ctx)
@@ -44,19 +55,28 @@ fun ScanScreen() {
                     cameraProviderFuture.addListener({
                         val cameraProvider = cameraProviderFuture.get()
 
-                        // Prévisualisation
                         val preview = CameraPreview.Builder().build().also {
                             it.setSurfaceProvider(previewView.surfaceProvider)
                         }
 
-                        // Analyse des images
                         val analyzer = ImageAnalysis.Builder()
                             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                             .build()
                             .also {
                                 it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { code ->
-                                    scannedCode = code
-                                    Log.d("ScanScreen", "Code détecté : $code")
+                                    if (!isProcessing) { // ne fait quelque chose que si pas déjà en traitement
+                                        isProcessing = true
+                                        scannedCode = code
+                                        scanViewModel.fetchProduct(code) { productData ->
+                                            val product = productData
+                                            // Ajouter dans l'historique
+                                            historyViewModel.addProduct(product)
+                                            // Lancer HistoryActivity
+                                            context.startActivity(
+                                                Intent(context, HistoryActivity::class.java)
+                                            )
+                                        }
+                                    }
                                 })
                             }
 
@@ -68,16 +88,14 @@ fun ScanScreen() {
                                 preview,
                                 analyzer
                             )
-                        } catch (exc: Exception) {
-                            Log.e("CameraX", "Use case binding failed", exc)
+                        } catch (e: Exception) {
+                            Log.e("CameraX", "Use case binding failed", e)
                         }
                     }, ContextCompat.getMainExecutor(ctx))
 
                     previewView
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier = Modifier.fillMaxWidth().weight(1f)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -86,11 +104,28 @@ fun ScanScreen() {
                 text = scannedCode ?: "Aucun code détecté",
                 modifier = Modifier.padding(16.dp)
             )
+
+            LazyColumn {
+                items(products) { product ->
+                    Row(modifier = Modifier.padding(8.dp)) {
+                        AsyncImage(
+                            model = product.imageUrl,
+                            contentDescription = product.name,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                            Text(product.name, fontWeight = FontWeight.Bold)
+                            Text(product.brand)
+                            Text(product.quantity)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-// 🔍 Analyseur d’images pour ML Kit
+
 private class BarcodeAnalyzer(
     private val onBarcodeDetected: (String) -> Unit
 ) : ImageAnalysis.Analyzer {
@@ -99,22 +134,24 @@ private class BarcodeAnalyzer(
 
     @ExperimentalGetImage
     override fun analyze(imageProxy: ImageProxy) {
-        val mediaImage = imageProxy.image ?: return
-
-        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-        scanner.process(image)
-            .addOnSuccessListener { barcodes ->
-                for (barcode in barcodes) {
-                    barcode.rawValue?.let { onBarcodeDetected(it) }
+        val mediaImage = imageProxy.image
+        if (mediaImage != null) {
+            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            scanner.process(image)
+                .addOnSuccessListener { barcodes ->
+                    for (barcode in barcodes) {
+                        barcode.rawValue?.let { onBarcodeDetected(it) }
+                    }
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.e("BarcodeAnalyzer", "Erreur de scan", e)
-            }
-            .addOnCompleteListener {
-                imageProxy.close()
-            }
+                .addOnFailureListener { e ->
+                    Log.e("BarcodeAnalyzer", "Erreur de scan", e)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } else {
+            imageProxy.close()
+        }
     }
 }
 
