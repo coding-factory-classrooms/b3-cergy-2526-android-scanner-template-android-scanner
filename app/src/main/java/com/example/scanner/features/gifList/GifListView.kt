@@ -2,6 +2,7 @@ package com.example.scanner.features.gifList
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,23 +20,28 @@ import com.example.scanner.ui.theme.ScannerTheme
 @Composable
 fun GifListView() {
     Scaffold() { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp)
         ) {
-            Text(text = "Page Gif liste", fontSize = 20.sp)
+            Column(
+                modifier = Modifier.align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "Page Gif liste", fontSize = 20.sp)
+            }
+
             CameraCaptureButton(
-                modifier = Modifier,
+                modifier = Modifier.align(Alignment.BottomEnd),
                 text = "Open Cam",
                 onResult = { base64 ->
-                    TODO()
+                    Log.d("GifListView", "Image capture (base64 length=${base64.length})")
                 },
                 onError = { error ->
-                    TODO()
+                    Log.e("GifListView", "Error camera: $error")
                 }
             )
         }
