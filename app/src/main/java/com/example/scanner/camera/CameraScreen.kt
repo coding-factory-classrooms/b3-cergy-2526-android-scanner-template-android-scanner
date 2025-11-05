@@ -37,7 +37,6 @@ fun CameraScreen() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraQuickTest() {
     // je prépare le context pour passer après à la page de détail
@@ -51,15 +50,19 @@ fun CameraQuickTest() {
     ) { bmp ->
         photo.value = bmp
         if (bmp != null) {
-            // 1) sérialiser en bytes (OK pour un test, pas pour la prod)
-            val stream = java.io.ByteArrayOutputStream()
-            bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-            val bytes = stream.toByteArray()
+            val filename = "photo_${System.currentTimeMillis()}.png"
+            context.openFileOutput(filename, android.content.Context.MODE_PRIVATE).use { out ->
+                bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+            }
+
+            val file = java.io.File(context.filesDir, filename)
+
 
             val intent = android.content.Intent(context, com.example.scanner.details.DetailsActivity::class.java).apply {
-                putExtra("photo_bytes", bytes)
+                putExtra("photo_filename", filename)
             }
             context.startActivity(intent)
+            photo.value = null
         }
     }
 
@@ -71,40 +74,7 @@ fun CameraQuickTest() {
             takePicturePreview.launch(null)
         }
     }
-
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Caméra") },
-                navigationIcon = {
-                    IconButton(onClick = { (context as? Activity)?.finish() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Retour"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            // aperçu après la prise
-            photo.value?.let { bmp ->
-                Image(
-                    bitmap = bmp.asImageBitmap(),
-                    contentDescription = "Vignette",
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-        }
-    }
-    }
+}
 
 
 

@@ -1,5 +1,6 @@
 package com.example.scanner.details
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -20,10 +21,13 @@ import androidx.compose.ui.unit.dp
 import com.example.scanner.ui.theme.ScannerTheme
 
 @Composable
-fun DetailsScreen(intent: Intent, onFinish: () -> Unit) {
-    val bytes = intent.getByteArrayExtra("photo_bytes")
-    val bmp = bytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-
+fun DetailsScreen(context: Context, intent: Intent, onFinish: () -> Unit) {
+    val filename = intent.getStringExtra("photo_filename")
+    val bmp = filename?.let {
+        context.openFileInput(it).use { ins ->
+            BitmapFactory.decodeStream(ins)
+        }
+    }
     ScannerTheme {
         Scaffold(
             topBar = {
