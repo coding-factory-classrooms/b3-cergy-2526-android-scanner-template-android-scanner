@@ -58,8 +58,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.compose.foundation)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(platform("androidx.compose:compose-bom:<version>"))
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("io.github.pilgr:paperdb:2.7.2")
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.core.testing)
@@ -70,4 +74,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 }
