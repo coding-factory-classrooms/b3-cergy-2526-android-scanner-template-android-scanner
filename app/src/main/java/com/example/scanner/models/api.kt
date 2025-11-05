@@ -10,26 +10,30 @@ import retrofit2.http.Path
 
 interface ProductService {
     @GET("api/v2/product/{barcode}")
-    suspend fun getProduct(@Path("barcode") barcode: String) : ProductResponse;
+    suspend fun getProduct(@Path("barcode") barcode: String) : ProductResponse; // suspend = async fun
 }
 
-suspend fun fetchProduct(service: ProductService, barcode: String) : Product? {
+sealed class ApiResponse() {
+    data class Success(val product: Product) : ApiResponse()
+    data class Failed(val message: String): ApiResponse()
+}
+
+suspend fun fetchProduct(service: ProductService, barcode: String) : ApiResponse {
     return try {
-        val response = service.getProduct(barcode)
-        response.product
+        ApiResponse.Success(service.getProduct(barcode).product)
     } catch (e: Exception){
-        null
+        ApiResponse.Failed("Problème avec l'API")
     }
 }
 
-fun ApiCall(barcode: String) : Product? = runBlocking {
+fun ApiCall(barcode: String) : ApiResponse = runBlocking { // execution blocked until received response
     val BASE_URL = "https://world.openfoodfacts.net/";
     val retrofit : Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val service = retrofit.create(ProductService::class.java)
-    var product: Product? = fetchProduct(service, barcode)
+    var product: ApiResponse = fetchProduct(service, barcode)
 
     return@runBlocking product;
 }
