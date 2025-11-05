@@ -28,42 +28,8 @@ class ListActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            CameraQuickTest()
+            ListScreen()
         }
     }
 }
 
-@Composable
-fun CameraQuickTest() {
-    // État qui stocke la photo (nullable tant qu’on n’a rien)
-    val photo = remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-
-    // Launcher pour ACTION_IMAGE_CAPTURE (vignette)
-    val takePicturePreview = rememberLauncherForActivityResult(
-        contract = androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview()
-    ) { bmp ->
-        photo.value = bmp
-    }
-
-    // UI minimale : un bouton pour lancer, et aperçu si dispo
-    androidx.compose.foundation.layout.Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        androidx.compose.material3.Button(onClick = { takePicturePreview.launch(null) }) {
-            androidx.compose.material3.Text("Prendre une photo (test)")
-        }
-
-        // Affiche la vignette si non nulle
-        photo.value?.let { bmp ->
-            androidx.compose.foundation.Image(
-                bitmap = bmp.asImageBitmap(),
-                contentDescription = "Vignette",
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxSize(fraction = 0.5f)
-            )
-        }
-    }
-}
