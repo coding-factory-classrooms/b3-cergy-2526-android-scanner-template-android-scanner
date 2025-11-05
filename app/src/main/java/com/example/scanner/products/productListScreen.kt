@@ -20,19 +20,20 @@ fun ProductListScreen(vm: ProductViewModel = viewModel()) {
 
     val state by vm.productFlow.collectAsState();
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { // useEffect -> executed on load once // UNIT -> void
         vm.LoadProduct()
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding -> // crash here :/
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            /*
             items(samplesMovies) { movie ->
                 MovieCard(movie)
-            }
+            }*/
         }
     }
 }
