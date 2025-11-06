@@ -1,6 +1,7 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -39,9 +40,10 @@ android {
         viewBinding = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
+    // ✅ Supprime kotlinCompilerExtensionVersion pour Kotlin 2.0+
+    // composeOptions {
+    //     kotlinCompilerExtensionVersion = libs.versions.kotlin.get()
+    // }
 
     packagingOptions {
         resources {
@@ -59,11 +61,10 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
 
     // Compose
-    implementation(platform("androidx.compose:compose-bom:2023.11.00"))
+    implementation(platform(libs.androidx.compose.bom)) // ✅ utilise version catalog
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation(libs.androidx.compose.material3)
 
@@ -98,6 +99,6 @@ dependencies {
     // Android instrumented tests
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.11.00"))
+    androidTestImplementation(platform(libs.androidx.compose.bom)) // ✅ version catalog
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 }
