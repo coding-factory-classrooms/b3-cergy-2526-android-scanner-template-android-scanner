@@ -38,7 +38,7 @@ fun TranslationScreenBody(
                 Text("Erreur: ${uiState.errorMessage}")
             }
         } else {
-            TranslationList(translations = uiState.translations)
+            TranslationList(translations = uiState.filteredTranslations)
         }
     }
 }

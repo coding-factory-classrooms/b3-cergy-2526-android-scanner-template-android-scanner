@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,7 +47,13 @@ fun TranslationListScreen(
                 Text("Retour")
             }
         }
-        
+        //ici faut mettre la fonctionalite de recherche
+        TextField(
+            value = uiState.searchQuery,
+            onValueChange = viewModel::onSearchQueryChanged,
+            label = { Text("Rechercher.") },
+            modifier =  Modifier.fillMaxWidth().padding(16.dp),
+        )
         TranslationScreenBody(uiState = uiState, modifier = Modifier)
     }
 }
