@@ -24,6 +24,7 @@ import com.example.scanner.ui.components.organisms.RecordingControls
 import com.example.scanner.ui.components.organisms.RecordingStatus
 import com.example.scanner.ui.components.organisms.RecordingStatusState
 import com.example.scanner.ui.viewmodel.AudioRecorderViewModel
+import com.example.scanner.ui.viewmodel.ScreenState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,8 +52,8 @@ fun AudioRecorderScreen(
         ScreenTitle(text = "Reconnaissance Vocale", modifier = Modifier.padding(bottom = 16.dp))
         
         LanguageSelector(
-            selectedLanguage = uiState.selectedLanguage,
-            onLanguageSelected = viewModel::selectLanguage,
+            selectedLanguage = uiState.targetLanguage,
+            onLanguageSelected = viewModel::selectTargetLanguage,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
@@ -64,30 +65,10 @@ fun AudioRecorderScreen(
             Spacer(Modifier.height(16.dp))
         }
 
-        when {
-            uiState.isRecording -> {
-                RecordingControls(
-                    isRecording = true,
-                    duration = uiState.recordingDuration,
-                    transcribedText = uiState.transcribedText,
-                    onRecordClick = {},
-                    onStopClick = viewModel::stopRecording,
-                    onDebugClick = {}
-                )
-            }
-            uiState.finalTranscribedText != null -> {
-                uiState.finalTranscribedText?.let { text ->
-                    RecordingStatus(
-                        status = RecordingStatusState.Recorded(text),
-                        onReset = viewModel::resetState
-                    )
-                }
-            }
-            else -> {
-                if (uiState.errorMessage == null) {
-                    RecordingStatus(status = RecordingStatusState.Idle, onReset = {})
-                    Spacer(Modifier.height(32.dp))
-                }
+        when (uiState.screenState) {
+            ScreenState.IDLE -> {
+                RecordingStatus(status = RecordingStatusState.Idle, onReset = {})
+                Spacer(Modifier.height(32.dp))
                 RecordingControls(
                     isRecording = false,
                     duration = duration,
@@ -97,8 +78,26 @@ fun AudioRecorderScreen(
                         else permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     },
                     onStopClick = {},
-                    onDebugClick = { viewModel.activeOnDebug() }
+                    onDebugClick = viewModel::onDebugClick
                 )
+            }
+            ScreenState.RECORDING -> {
+                RecordingControls(
+                    isRecording = true,
+                    duration = uiState.recordingDuration,
+                    transcribedText = uiState.transcribedText,
+                    onRecordClick = {},
+                    onStopClick = viewModel::stopRecording,
+                    onDebugClick = {}
+                )
+            }
+            ScreenState.TRANSCRIBED -> {
+                uiState.finalTranscribedText?.let { text ->
+                    RecordingStatus(
+                        status = RecordingStatusState.Recorded(text),
+                        onReset = viewModel::resetState
+                    )
+                }
             }
         }
     }

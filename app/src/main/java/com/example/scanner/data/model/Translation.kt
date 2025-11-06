@@ -12,6 +12,5 @@ data class Translation(
     val inputLange: String,
     val outputLange: String,
     val originalText: String,
-    val tradText: String,
-    val pathAudioFile: String
+    val tradText: String
 )

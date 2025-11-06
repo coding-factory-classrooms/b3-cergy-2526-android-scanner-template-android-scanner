@@ -1,40 +1,73 @@
 package com.example.scanner.data.repository
 
+import android.util.Log
 import com.example.scanner.data.dao.TranslationDao
 import com.example.scanner.data.model.Translation
+import com.example.scanner.data.model.TranslationRequest
+import com.example.scanner.data.service.TranslationApiService
 
 interface TranslationRepository {
-    suspend fun findOne(id: Long, useFakeData: Boolean = false): Result<Translation>
-    // find all 
+    suspend fun translate(
+        text: String,
+        sourceLang: String,
+        targetLang: String
+    ): Result<String>
+    
+    suspend fun findOne(id: Long): Result<Translation>
 }
 
-class TranslationRepositoryImpl(private val dao: TranslationDao): TranslationRepository {
-
-    override suspend fun findOne(id: Long, useFakeData: Boolean): Result<Translation> {
-        if (useFakeData) {
-            return Result.success(
-                Translation(
-                    id = id,
-                    isFave = false,
-                    createAt = System.currentTimeMillis(),
-                    inputLange = "fr",
-                    outputLange = "en",
-                    originalText = "Bonjour, comment allez-vous?",
-                    tradText = "Hello, how are you?",
-                    pathAudioFile = "/fake/audio/path/translation_$id.mp3"
-                )
-            )
-        }
+class TranslationRepositoryImpl(
+    private val apiService: TranslationApiService,
+    private val dao: TranslationDao
+) : TranslationRepository {
+    
+    companion object {
+        private const val TAG = "TranslationRepository"
+    }
+    
+    override suspend fun translate(
+        text: String,
+        sourceLang: String,
+        targetLang: String
+    ): Result<String> = runCatching {
+        Log.d(TAG, "=== Début appel API de traduction ===")
+        Log.d(TAG, "Texte à traduire: $text")
+        Log.d(TAG, "Source: $sourceLang")
+        Log.d(TAG, "Target: $targetLang")
+        
+        val request = TranslationRequest(
+            text = text,
+            source = sourceLang,
+            target = targetLang,
+            format = "text"
+        )
+        
+        Log.d(TAG, "Requête API: $request")
+        
+        val response = apiService.translate(request)
+        
+        Log.d(TAG, "Réponse API reçue:")
+        Log.d(TAG, "  - Texte traduit: ${response.translatedText}")
+        Log.d(TAG, "  - Langue détectée: ${response.detectedLanguage?.language}")
+        Log.d(TAG, "  - Confiance: ${response.detectedLanguage?.confidence}")
+        Log.d(TAG, "=== Fin appel API de traduction ===")
+        
+        response.translatedText
+    }.onFailure { error ->
+        Log.e(TAG, "=== Erreur lors de l'appel API ===", error)
+        Log.e(TAG, "Message d'erreur: ${error.message}")
+        Log.e(TAG, "Type d'erreur: ${error.javaClass.simpleName}")
+        Log.e(TAG, "=== Fin erreur ===")
+    }
+    
+    override suspend fun findOne(id: Long): Result<Translation> = runCatching {
         val translation = dao.getById(id)
-        return if (translation != null) {
+        if (translation != null) {
             Result.success(translation)
         } else {
             Result.failure(Exception("Translation with id $id not found"))
         }
+    }.getOrElse { error ->
+        Result.failure(error)
     }
-
-    // override pour getAll()
 }
-
-
-

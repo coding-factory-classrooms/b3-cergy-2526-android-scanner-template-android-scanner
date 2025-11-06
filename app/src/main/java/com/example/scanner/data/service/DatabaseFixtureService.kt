@@ -51,8 +51,7 @@ class DatabaseFixtureServiceImpl(
                 inputLange = "fr-FR",
                 outputLange = "en-US",
                 originalText = "Bonjour, comment allez-vous ?",
-                tradText = "Hello, how are you?",
-                pathAudioFile = "path/vers/laudio"
+                tradText = "Hello, how are you?"
             ),
             Translation(
                 id = 0,
@@ -61,8 +60,7 @@ class DatabaseFixtureServiceImpl(
                 inputLange = "en-US",
                 outputLange = "fr-FR",
                 originalText = "Good morning, have a nice day!",
-                tradText = "Bonjour, passez une bonne journée !",
-                pathAudioFile = "path/vers/laudio"
+                tradText = "Bonjour, passez une bonne journée !"
             ),
             Translation(
                 id = 0,
@@ -71,8 +69,7 @@ class DatabaseFixtureServiceImpl(
                 inputLange = "fr-FR",
                 outputLange = "es-ES",
                 originalText = "Merci beaucoup pour votre aide",
-                tradText = "Muchas gracias por tu ayuda",
-                pathAudioFile = "path/vers/laudio"
+                tradText = "Muchas gracias por tu ayuda"
             ),
             Translation(
                 id = 0,
@@ -81,8 +78,7 @@ class DatabaseFixtureServiceImpl(
                 inputLange = "de-DE",
                 outputLange = "fr-FR",
                 originalText = "Guten Tag, wie geht es Ihnen?",
-                tradText = "Bonjour, comment allez-vous ?",
-                pathAudioFile = "path/vers/laudio"
+                tradText = "Bonjour, comment allez-vous ?"
             ),
             Translation(
                 id = 0,
@@ -91,9 +87,7 @@ class DatabaseFixtureServiceImpl(
                 inputLange = "it-IT",
                 outputLange = "fr-FR",
                 originalText = "Ciao, come stai?",
-                tradText = "Salut, comment vas-tu ?" ,
-                pathAudioFile = "path/vers/laudio"
-                
+                tradText = "Salut, comment vas-tu ?"
             )
         )
 
