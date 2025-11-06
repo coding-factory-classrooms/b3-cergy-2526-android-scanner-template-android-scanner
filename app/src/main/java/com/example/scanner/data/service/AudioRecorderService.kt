@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 interface AudioRecorderService {
-    fun startRecording(context: Context, languageCode: String): Result<Unit>
+    fun startRecording(context: Context): Result<Unit>
     
     fun stopRecording(): Result<String>
     
@@ -72,7 +72,7 @@ class AudioRecorderServiceImpl : AudioRecorderService {
         override fun onEvent(eventType: Int, params: Bundle?) {}
     }
     
-    override fun startRecording(context: Context, languageCode: String): Result<Unit> = runCatching {
+    override fun startRecording(context: Context): Result<Unit> = runCatching {
         // Vérifie si une reconnaissance est déjà en cours
         if (isCurrentlyRecording) throw IllegalStateException("Une reconnaissance est déjà en cours")
         
@@ -86,18 +86,18 @@ class AudioRecorderServiceImpl : AudioRecorderService {
             setRecognitionListener(recognitionListener)
         }
         
-        // Configure l'intent de reconnaissance avec la langue sélectionnée
+        // Configure l'intent de reconnaissance en français par défaut
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode)
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true) // Active les résultats partiels
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fr-FR") // Français par défaut
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
         }.also { intent ->
             speechRecognizer?.startListening(intent)
         }
         
         isCurrentlyRecording = true
-        _transcribedText.value = "" // Réinitialise le texte transcrit
+        _transcribedText.value = ""
     }
     
     override fun stopRecording(): Result<String> = runCatching {
